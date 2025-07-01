@@ -12,6 +12,7 @@ import courseRoutes from './routes/courseRoutes.js';
 import studentRoutes from './routes/studentRoutes.js';
 import enhancedStudentRoutes from './routes/enhancedStudentRoutes.js';
 import gradeRoutes from './routes/gradeRoutes.js';
+import placementRoutes from './routes/placementRoutes.js';
 
 dotenv.config();
 
@@ -24,6 +25,7 @@ app.use('/api/depthead', courseRoutes);
 app.use('/api/student', studentRoutes);
 app.use('/api/student', enhancedStudentRoutes); // Enhanced student routes
 app.use('/api/grades', gradeRoutes); // Grade management routes
+app.use('/api/placement', placementRoutes); // Placement routes 
 
 // create a server
 app.listen(PORT, () => {
