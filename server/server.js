@@ -19,6 +19,12 @@ import excelRoutes from './routes/excelRoutes.js';
 import itAdminRoutes from './routes/itAdminRoutes.js';
 import transcriptRoutes from './routes/transcriptRoutes.js';
 import attendanceRoutes from './routes/attendanceRoutes.js';
+import scheduleRoutes from './routes/scheduleRoutes.js';
+import notificationRoutes from './routes/notificationRoutes.js';
+import graduationRoutes from './routes/graduationRoutes.js';
+import studentIDRoutes from './routes/studentIDRoutes.js';
+
+
 
 dotenv.config();
 
@@ -38,7 +44,10 @@ app.use('/api/excel', excelRoutes);
 app.use('/api/itadmin', itAdminRoutes);
 app.use('/api/transcript', transcriptRoutes);
 app.use('/api/attendance', attendanceRoutes);
-
+app.use('/api/schedule', scheduleRoutes); 
+app.use('/api/notifications', notificationRoutes); 
+app.use('/api/graduation', graduationRoutes);
+app.use('/api/student-id', studentIDRoutes)
 
 // create a server
 app.listen(PORT, () => {
