@@ -57,6 +57,8 @@ const auditLogSchema = new mongoose.Schema({
       'DATA_EXPORT',
       'DATA_IMPORT',
 
+      'REGISTRATION_PERIOD_CREATED',
+
       // Security Events
       'UNAUTHORIZED_ACCESS_ATTEMPT',
       'PERMISSION_DENIED',
@@ -69,7 +71,7 @@ const auditLogSchema = new mongoose.Schema({
   },
   targetModel: {
     type: String,
-    enum: ['User', 'Course', 'Registration', 'Grade', 'PlacementRequest', 'Evaluation']
+    enum: ['User', 'Course', 'Registration', 'Grade', 'PlacementRequest', 'Evaluation', 'RegistrationPeriod']
   },
   targetName: {
     type: String

@@ -26,7 +26,6 @@ import graduationRoutes from './routes/graduationRoutes.js';
 import studentIDRoutes from './routes/studentIDRoutes.js';
 import registrationPeriodRoutes from './routes/registrationPeriodRoutes.js';
 
-
 dotenv.config();
 
 const PORT = process.env.PORT || 5000;
@@ -53,8 +52,7 @@ app.use('/api/notifications', notificationRoutes);
 app.use('/api/graduation', graduationRoutes);
 app.use('/api/student-id', studentIDRoutes);
 app.use('./api/verify', studentIDRoutes);
-app.use('./api/registration-period', registrationPeriodRoutes);
-
+app.use('/api/registration-period', registrationPeriodRoutes);
 // create a server
 app.listen(PORT, () => {
   console.log(`Server is running on http://localhost:${PORT}`);
