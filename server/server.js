@@ -1,5 +1,6 @@
-import express from 'express';
+import express from 'express'
 import dotenv from 'dotenv';
+import cors from 'cors';
 
 const app = express();
 // middleware
@@ -29,7 +30,10 @@ import registrationPeriodRoutes from './routes/registrationPeriodRoutes.js';
 dotenv.config();
 
 const PORT = process.env.PORT || 5000;
-
+app.use(cors({
+  origin: process.env.CLIENT_URL || 'http://localhost:5173',
+  credentials: true
+}));
 // Routes
 app.use('/api/auth', authRoutes);
 app.use('/api/admin', adminRoutes);
