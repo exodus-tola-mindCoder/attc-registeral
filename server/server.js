@@ -23,7 +23,7 @@ import scheduleRoutes from './routes/scheduleRoutes.js';
 import notificationRoutes from './routes/notificationRoutes.js';
 import graduationRoutes from './routes/graduationRoutes.js';
 import studentIDRoutes from './routes/studentIDRoutes.js';
-
+import registrationPeriodRoutes from './routes/registrationPeriodRoutes.js';
 
 
 dotenv.config();
@@ -47,7 +47,9 @@ app.use('/api/attendance', attendanceRoutes);
 app.use('/api/schedule', scheduleRoutes); 
 app.use('/api/notifications', notificationRoutes); 
 app.use('/api/graduation', graduationRoutes);
-app.use('/api/student-id', studentIDRoutes)
+app.use('/api/student-id', studentIDRoutes);
+app.use('./api/verify', studentIDRoutes);
+app.use('./api/registration-period', registrationPeriodRoutes);
 
 // create a server
 app.listen(PORT, () => {
