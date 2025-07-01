@@ -14,6 +14,8 @@ import enhancedStudentRoutes from './routes/enhancedStudentRoutes.js';
 import gradeRoutes from './routes/gradeRoutes.js';
 import placementRoutes from './routes/placementRoutes.js';
 import evaluationRoutes from './routes/evaluationRoutes.js';
+import pdfRoutes from './routes/pdfRoutes.js';
+import excelRoutes from './routes/excelRoutes.js';
 
 dotenv.config();
 
@@ -28,6 +30,10 @@ app.use('/api/student', enhancedStudentRoutes);
 app.use('/api/grades', gradeRoutes); 
 app.use('/api/placement', placementRoutes); 
 app.use('/api/evaluations', evaluationRoutes); 
+app.use('/api/pdf', pdfRoutes);
+app.use('/api/excel', excelRoutes);
+
+
 // create a server
 app.listen(PORT, () => {
   console.log(`Server is running on http://localhost:${PORT}`);
