@@ -18,6 +18,7 @@ import pdfRoutes from './routes/pdfRoutes.js';
 import excelRoutes from './routes/excelRoutes.js';
 import itAdminRoutes from './routes/itAdminRoutes.js';
 import transcriptRoutes from './routes/transcriptRoutes.js';
+import attendanceRoutes from './routes/attendanceRoutes.js';
 
 dotenv.config();
 
@@ -36,6 +37,7 @@ app.use('/api/pdf', pdfRoutes);
 app.use('/api/excel', excelRoutes);
 app.use('/api/itadmin', itAdminRoutes);
 app.use('/api/transcript', transcriptRoutes);
+app.use('/api/attendance', attendanceRoutes);
 
 
 // create a server
