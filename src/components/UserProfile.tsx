@@ -8,7 +8,7 @@ interface UserProfileProps {
 
 const UserProfile: React.FC<UserProfileProps> = ({ user }) => {
   // Roles that should NOT see year/semester
-  const noYearSemesterRoles = ['itAdmin', 'president', 'DepartmentHead'];
+  const noYearSemesterRoles = ['itAdmin', 'president', 'registrar', 'departmentHead', 'instructor', 'placementCommittee', 'graduationCommittee'];
   const showYearSemester = !noYearSemesterRoles.includes(user.role);
 
   return (
