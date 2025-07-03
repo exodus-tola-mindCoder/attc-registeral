@@ -7,6 +7,10 @@ interface UserProfileProps {
 }
 
 const UserProfile: React.FC<UserProfileProps> = ({ user }) => {
+  // Roles that should NOT see year/semester
+  const noYearSemesterRoles = ['itAdmin', 'president', 'DepartmentHead'];
+  const showYearSemester = !noYearSemesterRoles.includes(user.role);
+
   return (
     <div className="bg-white rounded-lg shadow-md p-6">
       <div className="flex items-center space-x-3 mb-4">
@@ -38,7 +42,7 @@ const UserProfile: React.FC<UserProfileProps> = ({ user }) => {
             </div>
           )}
         </div>
-        {user.currentYear && (
+        {showYearSemester && user.currentYear && (
           <div className="grid grid-cols-2 gap-4">
             <div>
               <p className="text-sm font-medium text-gray-500">Academic Year</p>
