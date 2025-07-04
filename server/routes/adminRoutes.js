@@ -1,17 +1,23 @@
 import express from 'express';
-import { signup, login, getProfile, changePassword, generateEmail } from '../controllers/authController.js';
+import { importSeniorStudents, getImportTemplate } from '../controllers/importController.js';
 import verifyToken from '../middleware/verifyToken.js';
-import { uploadTranscripts, handleUploadErrors } from '../middleware/fileUploadMiddleware.js';
+import checkRole from '../middleware/checkRole.js';
+import { uploadExcelFile, handleExcelUploadErrors } from '../middleware/excelUploadMiddleware.js';
 
 const router = express.Router();
 
-// Public routes
-router.post('/generate-email', generateEmail);
-router.post('/signup', uploadTranscripts, handleUploadErrors, signup);
-router.post('/login', login);
+// All admin routes require authentication and IT Admin role
+router.use(verifyToken);
+router.use(checkRole(['itAdmin']));
 
-// Protected routes
-router.get('/profile', verifyToken, getProfile);
-router.put('/change-password', verifyToken, changePassword);
+// @desc    Import senior students from Excel
+// @route   POST /api/admin/import-seniors
+// @access  Private (IT Admin only)
+router.post('/import-seniors', uploadExcelFile, handleExcelUploadErrors, importSeniorStudents);
+
+// @desc    Get import template information
+// @route   GET /api/admin/import-template
+// @access  Private (IT Admin only)
+router.get('/import-template', getImportTemplate);
 
 export default router;

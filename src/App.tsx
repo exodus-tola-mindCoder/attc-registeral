@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { User, Shield, GraduationCap, LogIn, UserPlus, Eye, EyeOff, AlertCircle, CheckCircle, Loader2, Clock, Upload, FileText, X, Database, Download, Users, BookOpen, FileCheck, Calendar, GraduationCapIcon, MapPin, TrendingUp, Star, Settings, ClipboardCheck, Bell, CreditCard, Award, Building } from 'lucide-react';
+import { User, Shield, LogIn, UserPlus, Eye, EyeOff, AlertCircle, CheckCircle, Loader2, Clock, Upload, FileText, X, Database, Download, Users, BookOpen, FileCheck, Calendar, GraduationCapIcon, MapPin, TrendingUp, Star, Settings, ClipboardCheck, Bell, CreditCard, Award, Building } from 'lucide-react';
 import LoginForm from './components/LoginForm';
 import SignupForm from './components/SignupForm';
 import UserProfile from './components/UserProfile';
@@ -98,9 +98,9 @@ function App() {
               <div className="flex items-center space-x-4">
                 <div className=" p-4 rounded-full">
                   <img
-                  src="/menschenLogo.png"
-                  alt="ATTC College Logo"
-                  className="h-14 w-14 object-contain rounded-full bg-white"
+                    src="/menschenLogo.png"
+                    alt="ATTC College Logo"
+                    className="h-14 w-14 object-contain rounded-full bg-white"
                   />
                 </div>
                 <div>
@@ -837,13 +837,13 @@ function App() {
       <div className="max-w-2xl w-full">
         {/* Header */}
         <div className="text-center mb-8">
-            <div className="w-32 h-32 rounded-full flex items-center justify-center mx-auto mb-4">
+          <div className="w-32 h-32 rounded-full flex items-center justify-center mx-auto mb-4">
             <img
               src="/menschenLogo.png"
               alt="ATTC College Logo"
               className="h-20 w-20 object-contain rounded-full"
             />
-            </div>
+          </div>
           <h1 className="text-3xl font-bold text-gray-900">ATTC College</h1>
           <p className="text-gray-600 mt-2">Academic and Registrar Management System</p>
         </div>
