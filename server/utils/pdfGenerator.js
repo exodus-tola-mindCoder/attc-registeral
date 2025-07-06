@@ -28,7 +28,7 @@ export const generateRegistrationSlip = async (registration, student) => {
       // Header
       doc.fontSize(20)
         .font('Helvetica-Bold')
-        .text('ATTC COLLEGE', { align: 'center' })
+        .text('ATTC', { align: 'center' })
         .fontSize(16)
         .text('COURSE REGISTRATION SLIP', { align: 'center' })
         .moveDown(2);
@@ -126,7 +126,7 @@ export const generateRegistrationSlip = async (registration, student) => {
         .text('This is an official registration document. Keep it for your records.', { align: 'center' })
         .moveDown(1)
         .text(`Generated on: ${new Date().toLocaleString()}`, { align: 'center' })
-        .text('ATTC College Academic Management System', { align: 'center' });
+        .text('ATTC  Academic Management System', { align: 'center' });
 
       // Add page border
       doc.rect(30, 30, doc.page.width - 60, doc.page.height - 60).stroke();

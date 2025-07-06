@@ -181,8 +181,8 @@ const StudentIDCard: React.FC<StudentIDCardProps> = ({ user, token, onError, onS
           {/* ID Card Status */}
           {idCardStatus && (
             <div className={`border rounded-lg p-4 ${idCardStatus.idCardStatus === 'Active' ? 'bg-green-50 border-green-200' :
-                idCardStatus.idCardStatus === 'Inactive' ? 'bg-red-50 border-red-200' :
-                  'bg-yellow-50 border-yellow-200'
+              idCardStatus.idCardStatus === 'Inactive' ? 'bg-red-50 border-red-200' :
+                'bg-yellow-50 border-yellow-200'
               }`}>
               <div className="flex items-center space-x-3">
                 {idCardStatus.idCardStatus === 'Active' ? (
@@ -206,22 +206,19 @@ const StudentIDCard: React.FC<StudentIDCardProps> = ({ user, token, onError, onS
             </div>
           )}
 
-          {/* ID Card Preview */}
-          <div className="border border-gray-200 rounded-lg p-6">
-            <h3 className="text-lg font-medium text-gray-900 mb-4">ID Card Preview</h3>
-
-            <div className="bg-white border border-gray-300 rounded-lg p-4 max-w-md mx-auto" style={{ width: '320px', height: '200px' }}>
-              <div className="flex flex-col items-center">
-                <div className="text-center mb-2">
-                  <div className="bg-indigo-600 text-white text-xs font-bold py-1 px-2 rounded">
-                    ATTC College
-                  </div>
-                  <div className="text-xs text-gray-500">Student Identification Card</div>
-                </div>
-
-                <div className="flex w-full">
+          {/* ID Card Preview & Photo Upload - FLEX ROW */}
+          <div className="flex flex-col md:flex-row gap-6">
+            {/* ID Card Preview */}
+            <div className="flex-1 border border-gray-200 rounded-lg p-6 flex flex-col items-center justify-center bg-white shadow-md">
+              <h3 className="text-lg font-medium text-gray-900 mb-4">ID Card Preview</h3>
+              <div className="relative rounded-xl shadow-2xl overflow-hidden bg-gradient-to-br from-indigo-600 via-blue-500 to-blue-300 border-4 border-white" style={{ width: '340px', height: '210px' }}>
+                {/* Decorative top wave */}
+                <svg className="absolute top-0 left-0 w-full h-10" viewBox="0 0 340 40" fill="none" xmlns="http://www.w3.org/2000/svg">
+                  <path d="M0 40 Q85 0 170 40 T340 40 V0 H0 V40Z" fill="#fff" fillOpacity="0.25" />
+                </svg>
+                <div className="flex flex-row items-center h-full relative z-10">
                   {/* Photo area */}
-                  <div className="w-1/3 border border-gray-300 h-24 flex items-center justify-center bg-gray-50">
+                  <div className="w-28 h-36 ml-4 mt-6 mb-6 rounded-lg overflow-hidden border-4 border-white shadow-md bg-gray-100 flex items-center justify-center">
                     {photoPreview ? (
                       <img
                         src={photoPreview}
@@ -229,40 +226,53 @@ const StudentIDCard: React.FC<StudentIDCardProps> = ({ user, token, onError, onS
                         className="h-full w-full object-cover"
                       />
                     ) : (
-                      <UserIcon className="h-8 w-8 text-gray-400" />
+                      <UserIcon className="h-12 w-12 text-gray-400" />
                     )}
                   </div>
-
                   {/* Info area */}
-                  <div className="w-2/3 pl-3">
-                    <div className="text-xs font-semibold">{user.firstName} {user.fatherName}</div>
-                    <div className="text-xs text-gray-600 mt-1">ID: {user.studentId}</div>
-                    <div className="text-xs text-gray-600 mt-1">Dept: {user.department || 'Freshman'}</div>
-                    <div className="text-xs text-gray-600 mt-1">Year {user.currentYear}, Sem {user.currentSemester}</div>
+                  <div className="flex-1 flex flex-col justify-between h-full pl-4 pr-4 py-6">
+                    <div>
+                      <div className="flex items-center space-x-2">
+                        <span className="bg-white text-indigo-700 font-bold text-xs px-2 py-1 rounded shadow">ATTC</span>
+                        <span className="text-xs text-white bg-indigo-800 rounded px-2 py-0.5 font-semibold tracking-widest">STUDENT</span>
+                      </div>
+                      <div className="mt-2 text-lg font-bold text-white drop-shadow-sm">{user.firstName} {user.fatherName}</div>
+                      <div className="text-xs text-indigo-100 mt-1 font-mono">ID: <span className="font-semibold">{user.studentId}</span></div>
+                      <div className="text-xs text-indigo-100 mt-1">Dept: <span className="font-semibold">{user.department || 'Freshman'}</span></div>
+                      <div className="text-xs text-indigo-100 mt-1">Year {user.currentYear}, Sem {user.currentSemester}</div>
+                    </div>
+                    <div className="flex items-center justify-between mt-4">
+                      <div className="text-[10px] text-indigo-50">
+                        Issue: {idCardStatus?.idCardIssuedAt ?
+                          new Date(idCardStatus.idCardIssuedAt).toLocaleDateString() :
+                          new Date().toLocaleDateString()}
+                      </div>
+                      {/* Simulated QR code area */}
+                      <div className="w-10 h-10 bg-white rounded flex items-center justify-center shadow-inner">
+                        <svg className="w-7 h-7" viewBox="0 0 28 28" fill="none" xmlns="http://www.w3.org/2000/svg">
+                          <rect x="1" y="1" width="26" height="26" rx="4" fill="#e0e7ef" stroke="#6366f1" strokeWidth="2" />
+                          <rect x="4" y="4" width="5" height="5" rx="1" fill="#6366f1" />
+                          <rect x="19" y="4" width="5" height="5" rx="1" fill="#6366f1" />
+                          <rect x="4" y="19" width="5" height="5" rx="1" fill="#6366f1" />
+                          <rect x="12" y="12" width="4" height="4" rx="1" fill="#6366f1" />
+                        </svg>
+                      </div>
+                    </div>
                   </div>
                 </div>
-
-                <div className="w-full flex justify-between mt-2">
-                  <div className="text-xs text-gray-500">
-                    Issue Date: {idCardStatus?.idCardIssuedAt ?
-                      new Date(idCardStatus.idCardIssuedAt).toLocaleDateString() :
-                      new Date().toLocaleDateString()}
-                  </div>
-                  <div className="text-xs text-gray-500">
-                    QR Verification
-                  </div>
-                </div>
+                {/* Decorative bottom wave */}
+                <svg className="absolute bottom-0 left-0 w-full h-8" viewBox="0 0 340 32" fill="none" xmlns="http://www.w3.org/2000/svg">
+                  <path d="M0 0 Q85 32 170 0 T340 0 V32 H0 V0Z" fill="#fff" fillOpacity="0.18" />
+                </svg>
+                {/* Card border shine */}
+                <div className="absolute inset-0 pointer-events-none rounded-xl border-2 border-white border-opacity-40" style={{ boxShadow: '0 2px 16px 0 rgba(49, 130, 206, 0.15)' }} />
               </div>
             </div>
-          </div>
-
-          {/* Photo Upload */}
-          <div className="border border-gray-200 rounded-lg p-6">
-            <h3 className="text-lg font-medium text-gray-900 mb-4">Upload ID Photo</h3>
-
-            {photoFile ? (
-              <div className="space-y-4">
-                <div className="flex items-center justify-center">
+            {/* Photo Upload */}
+            <div className="flex-1 border border-gray-200 rounded-lg p-6 flex flex-col items-center justify-center bg-white shadow-md">
+              <h3 className="text-lg font-medium text-gray-900 mb-4">Upload ID Photo</h3>
+              {photoFile ? (
+                <div className="space-y-4 w-full flex flex-col items-center">
                   <div className="relative w-40 h-48 border border-gray-300 rounded-md overflow-hidden">
                     <img
                       src={photoPreview || ''}
@@ -276,60 +286,55 @@ const StudentIDCard: React.FC<StudentIDCardProps> = ({ user, token, onError, onS
                       <X className="h-4 w-4" />
                     </button>
                   </div>
+                  <button
+                    onClick={handleUploadPhoto}
+                    disabled={uploadingPhoto}
+                    className="w-full bg-indigo-600 hover:bg-indigo-700 disabled:bg-gray-400 text-white py-2 px-4 rounded-md transition-colors duration-200 flex items-center justify-center space-x-2"
+                  >
+                    {uploadingPhoto ? (
+                      <Loader2 className="h-4 w-4 animate-spin" />
+                    ) : (
+                      <Upload className="h-4 w-4" />
+                    )}
+                    <span>{uploadingPhoto ? 'Uploading...' : 'Upload Photo'}</span>
+                  </button>
                 </div>
-
-                <button
-                  onClick={handleUploadPhoto}
-                  disabled={uploadingPhoto}
-                  className="w-full bg-indigo-600 hover:bg-indigo-700 disabled:bg-gray-400 text-white py-2 px-4 rounded-md transition-colors duration-200 flex items-center justify-center space-x-2"
-                >
-                  {uploadingPhoto ? (
-                    <Loader2 className="h-4 w-4 animate-spin" />
-                  ) : (
-                    <Upload className="h-4 w-4" />
-                  )}
-                  <span>{uploadingPhoto ? 'Uploading...' : 'Upload Photo'}</span>
-                </button>
-              </div>
-            ) : (
-              <div className="space-y-4">
-                <div className="flex items-center justify-center">
+              ) : (
+                <div className="space-y-4 w-full flex flex-col items-center">
                   <div className="w-40 h-48 border-2 border-dashed border-gray-300 rounded-md flex flex-col items-center justify-center">
                     <Camera className="h-8 w-8 text-gray-400 mb-2" />
                     <p className="text-sm text-gray-500 text-center px-2">
                       Upload a passport-style photo for your ID card
                     </p>
                   </div>
+                  <div className="flex justify-center w-full">
+                    <input
+                      type="file"
+                      accept="image/jpeg,image/jpg,image/png"
+                      onChange={handlePhotoChange}
+                      className="hidden"
+                      id="photo-upload"
+                    />
+                    <label
+                      htmlFor="photo-upload"
+                      className="bg-indigo-600 hover:bg-indigo-700 text-white py-2 px-4 rounded-md transition-colors duration-200 flex items-center space-x-2 cursor-pointer w-full justify-center"
+                    >
+                      <Camera className="h-4 w-4" />
+                      <span>Select Photo</span>
+                    </label>
+                  </div>
+                  <div className="text-xs text-gray-500 text-center">
+                    <p>Photo requirements:</p>
+                    <ul className="list-disc list-inside">
+                      <li>Clear, front-facing headshot</li>
+                      <li>Plain background</li>
+                      <li>JPG, JPEG, or PNG format</li>
+                      <li>Maximum size: 5MB</li>
+                    </ul>
+                  </div>
                 </div>
-
-                <div className="flex justify-center">
-                  <input
-                    type="file"
-                    accept="image/jpeg,image/jpg,image/png"
-                    onChange={handlePhotoChange}
-                    className="hidden"
-                    id="photo-upload"
-                  />
-                  <label
-                    htmlFor="photo-upload"
-                    className="bg-indigo-600 hover:bg-indigo-700 text-white py-2 px-4 rounded-md transition-colors duration-200 flex items-center space-x-2 cursor-pointer"
-                  >
-                    <Camera className="h-4 w-4" />
-                    <span>Select Photo</span>
-                  </label>
-                </div>
-
-                <div className="text-xs text-gray-500 text-center">
-                  <p>Photo requirements:</p>
-                  <ul className="list-disc list-inside">
-                    <li>Clear, front-facing headshot</li>
-                    <li>Plain background</li>
-                    <li>JPG, JPEG, or PNG format</li>
-                    <li>Maximum size: 5MB</li>
-                  </ul>
-                </div>
-              </div>
-            )}
+              )}
+            </div>
           </div>
 
           {/* Generate ID Card */}

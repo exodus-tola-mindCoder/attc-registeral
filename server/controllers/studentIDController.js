@@ -49,8 +49,9 @@ export const generateStudentID = async (req, res) => {
       margin: 10,
       info: {
         Title: `Student ID - ${student.firstName} ${student.fatherName}`,
-        Author: 'ATTC University',
+        Author: 'ATTC',
         Subject: 'Student Identification Card',
+        // Logo:
         Keywords: 'student, id, card, identification',
         Creator: 'ATTC Academic Management System'
       }
@@ -70,85 +71,70 @@ export const generateStudentID = async (req, res) => {
     res.setHeader('Content-Type', 'application/pdf');
     res.setHeader('Content-Disposition', `attachment; filename="${filename}"`);
 
-    // Add border
-    doc.rect(0, 0, doc.page.width, doc.page.height).stroke('#1e40af');
 
-    // Add college logo at the top
-    doc.circle(doc.page.width / 2, 25, 15)
-      .fillAndStroke('#1e40af', '#1e40af');
+    // --- Digital ID Card Design ---
+    // Card background gradient (simulate with colored rectangles)
+    doc.rect(0, 0, doc.page.width, doc.page.height).fill('#e0e7ef');
+    doc.rect(0, 0, doc.page.width, 40).fill('#1e40af'); // Top bar
+    doc.rect(0, doc.page.height - 25, doc.page.width, 25).fill('#2563eb'); // Bottom bar
 
-    doc.fillColor('white')
-      .font('Helvetica-Bold')
-      .fontSize(10)
-      .text('ATTC', doc.page.width / 2 - 12, 21);
 
-    // University name
-    doc.moveDown(0.5)
-      .fontSize(12)
-      .font('Helvetica-Bold')
-      .fillColor('#1e40af')
-      .text('ATTC UNIVERSITY', { align: 'center' })
-      .fontSize(8)
-      .font('Helvetica')
-      .fillColor('#374151')
-      .text('Student Identification Card', { align: 'center' })
-      .moveDown(0.5);
+    // Logo circle (top left, smaller and more balanced)
+    doc.save();
+    const logoCircleX = 24, logoCircleY = 24, logoCircleRadius = 9;
+    doc.circle(logoCircleX, logoCircleY, logoCircleRadius).fill('#fff');
+    doc.fillColor('#1e40af').font('Helvetica-Bold').fontSize(7).text('ATTC', logoCircleX - 9, logoCircleY - 5, { width: 18, align: 'center' });
+    doc.restore();
 
-    // Student photo placeholder (left side)
-    // In a real implementation, you would use the student's actual photo
-    doc.rect(15, 50, 60, 75)
-      .stroke('#d1d5db');
 
+    // Card title (top right, slightly lower for balance)
+    doc.fillColor('#e0e7ef').font('Helvetica-Bold').fontSize(9).text('DIGITAL STUDENT ID', 60, 15, { width: 150, align: 'right' });
+
+
+    // Student photo (left)
+    doc.save();
+    doc.roundedRect(15, 50, 54, 68, 7).clip();
     if (student.photoUrl) {
       try {
-        // If student has uploaded a photo, use it
-        doc.image(student.photoUrl, 15, 50, { width: 60, height: 75 });
+        doc.image(student.photoUrl, 15, 50, { width: 54, height: 68 });
       } catch (error) {
-        // If there's an error loading the image, use placeholder text
-        doc.fontSize(8)
-          .text('PHOTO', 35, 80);
+        doc.fontSize(8).fillColor('#6b7280').text('PHOTO', 30, 80);
       }
     } else {
-      // Placeholder text if no photo
-      doc.fontSize(8)
-        .text('PHOTO', 35, 80);
+      doc.fontSize(8).fillColor('#6b7280').text('PHOTO', 30, 80);
     }
+    doc.restore();
+    // Border for photo
+    doc.roundedRect(15, 50, 54, 68, 7).lineWidth(1).stroke('#1e40af');
 
-    // Student information (right side)
-    doc.fontSize(8)
-      .font('Helvetica-Bold')
-      .fillColor('#1f2937')
-      .text('Name:', 85, 50)
-      .font('Helvetica')
-      .text(`${student.firstName} ${student.fatherName} ${student.grandfatherName}`, 85, 60, { width: 140 })
 
-      .font('Helvetica-Bold')
-      .text('ID Number:', 85, 75)
-      .font('Helvetica')
-      .text(student.studentId, 85, 85)
+    // Student info (right, improved layout and visibility)
+    const infoLeft = 75, infoTop = 52;
+    doc.fontSize(10).font('Helvetica-Bold').fillColor('#1e40af').text(`${student.firstName} ${student.fatherName} ${student.grandfatherName}`, infoLeft, infoTop, { width: 140, lineGap: 1 });
+    doc.fontSize(8.5).font('Helvetica').fillColor('#111827')
+      .text(`ID: `, infoLeft, infoTop + 16, { continued: true })
+      .font('Helvetica-Bold').text(`${student.studentId}`)
+      .font('Helvetica').fillColor('#374151')
+      .text(`Dept: `, infoLeft, infoTop + 28, { continued: true })
+      .font('Helvetica-Bold').fillColor('#1e40af').text(`${student.department || 'Freshman'}`)
+      .font('Helvetica').fillColor('#374151')
+      .text(`Year: `, infoLeft, infoTop + 40, { continued: true })
+      .font('Helvetica-Bold').fillColor('#1e40af').text(`${student.currentYear}`, { continued: true })
+      .font('Helvetica').fillColor('#374151').text(`   Sem: `, { continued: true })
+      .font('Helvetica-Bold').fillColor('#1e40af').text(`${student.currentSemester}`);
 
-      .font('Helvetica-Bold')
-      .text('Department:', 85, 95)
-      .font('Helvetica')
-      .text(student.department || 'Freshman', 85, 105)
 
-      .font('Helvetica-Bold')
-      .text('Academic Year:', 85, 115)
-      .font('Helvetica')
-      .text(`Year ${student.currentYear}, Semester ${student.currentSemester}`, 85, 125);
+    // QR code (bottom right, slightly higher for balance)
+    doc.image(qrCodeBuffer, 170, 88, { width: 52, height: 52 });
 
-    // QR code (bottom right)
-    doc.image(qrCodeBuffer, 170, 85, { width: 50, height: 50 });
 
-    // Issue date and expiry date
+    // Issue/expiry (bottom left, improved contrast)
     const issueDate = new Date();
     const expiryDate = new Date();
-    expiryDate.setFullYear(expiryDate.getFullYear() + 4); // Valid for 4 years
-
-    doc.fontSize(6)
-      .fillColor('#6b7280')
-      .text(`Issue Date: ${issueDate.toLocaleDateString()}`, 15, 135)
-      .text(`Valid Until: ${expiryDate.toLocaleDateString()}`, 15, 143);
+    expiryDate.setFullYear(expiryDate.getFullYear() + 4);
+    doc.fontSize(6.5).fillColor('#e0e7ef')
+      .text(`Issued: ${issueDate.toLocaleDateString()}`, 18, doc.page.height - 22)
+      .text(`Valid: ${expiryDate.toLocaleDateString()}`, 18, doc.page.height - 13);
 
     // Update student record with ID card information
     student.idCardIssuedAt = issueDate;
@@ -289,11 +275,11 @@ export const bulkGenerateStudentIDs = async (req, res) => {
         .fontSize(12)
         .font('Helvetica-Bold')
         .fillColor('#1e40af')
-        .text('ATTC UNIVERSITY', { align: 'center' })
+        .text('ATTC', { align: 'center' })
         .fontSize(8)
         .font('Helvetica')
         .fillColor('#374151')
-        .text('Student Identification Card', { align: 'center' })
+        // .text('Student Identification Card', { align: 'center' })
         .moveDown(0.5);
 
       // Student photo placeholder (left side)
