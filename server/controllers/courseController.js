@@ -24,7 +24,7 @@ export const addCourses = async (req, res) => {
     }
 
     // Validate department
-    const validDepartments = ['Freshman', 'Electrical(ETTD)', 'Manufacturing(MTD)', 'Automotive(ATD)'];
+    const validDepartments = ['Freshman', 'Electrical', 'Manufacturing', 'Automotive'];
     if (!validDepartments.includes(department)) {
       return res.status(400).json({
         success: false,
@@ -159,7 +159,7 @@ export const getCourses = async (req, res) => {
       parseInt(year),
       parseInt(semester)
     );
-
+    console.log('Queried courses:', courses);
     const totalCredits = courses.reduce((sum, course) => sum + course.credit, 0);
 
     res.status(200).json({

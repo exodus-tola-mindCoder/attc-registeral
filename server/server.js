@@ -14,6 +14,7 @@ import courseRoutes from './routes/courseRoutes.js';
 import studentRoutes from './routes/studentRoutes.js';
 import enhancedStudentRoutes from './routes/enhancedStudentRoutes.js';
 import gradeRoutes from './routes/gradeRoutes.js';
+import gradeUploadRoutes from './routes/gradeUploadRoutes.js';
 import placementRoutes from './routes/placementRoutes.js';
 import evaluationRoutes from './routes/evaluationRoutes.js';
 import pdfRoutes from './routes/pdfRoutes.js';
@@ -26,6 +27,7 @@ import notificationRoutes from './routes/notificationRoutes.js';
 import graduationRoutes from './routes/graduationRoutes.js';
 import studentIDRoutes from './routes/studentIDRoutes.js';
 import registrationPeriodRoutes from './routes/registrationPeriodRoutes.js';
+import gradeTemplateRoutes from './routes/gradeTemplateRoutes.js';
 
 dotenv.config();
 
@@ -38,23 +40,25 @@ app.use(cors({
 app.use('/api/auth', authRoutes);
 app.use('/api/test', testRoutes);
 app.use('/api/admin', adminRoutes);
-app.use('/api/depthead', courseRoutes);
+app.use('/api/depthead/courses', courseRoutes);
 app.use('/api/student', studentRoutes);
 app.use('/api/student', enhancedStudentRoutes);
-app.use('/api/grades', gradeRoutes); 
-app.use('/api/placement', placementRoutes); 
-app.use('/api/evaluations', evaluationRoutes); 
+app.use('/api/grades', gradeRoutes);
+app.use('/api/grades', gradeUploadRoutes);
+app.use('/api/placement', placementRoutes);
+app.use('/api/evaluations', evaluationRoutes);
 app.use('/api/pdf', pdfRoutes);
 app.use('/api/excel', excelRoutes);
 app.use('/api/itadmin', itAdminRoutes);
 app.use('/api/transcript', transcriptRoutes);
 app.use('/api/attendance', attendanceRoutes);
-app.use('/api/schedule', scheduleRoutes); 
-app.use('/api/notifications', notificationRoutes); 
+app.use('/api/schedule', scheduleRoutes);
+app.use('/api/notifications', notificationRoutes);
 app.use('/api/graduation', graduationRoutes);
 app.use('/api/student-id', studentIDRoutes);
 app.use('./api/verify', studentIDRoutes);
 app.use('/api/registration-period', registrationPeriodRoutes);
+app.use('/api/grades', gradeTemplateRoutes);
 // create a server
 app.listen(PORT, () => {
   console.log(`Server is running on http://localhost:${PORT}`);

@@ -37,6 +37,7 @@ const CourseManagement: React.FC<CourseManagementProps> = ({ user, token, onErro
   const fetchCourses = async () => {
     setLoading(true);
     try {
+      console.log('Token:', token);
       const response = await fetch(
         `${API_BASE}/depthead/courses?department=${selectedDepartment}&year=${selectedYear}&semester=${selectedSemester}`,
         {
@@ -71,10 +72,10 @@ const CourseManagement: React.FC<CourseManagementProps> = ({ user, token, onErro
         body: JSON.stringify({
           courses: [{
             ...newCourse,
-            department: selectedDepartment,
-            year: selectedYear,
-            semester: selectedSemester
-          }]
+          }],
+          department: selectedDepartment,
+          year: selectedYear,
+          semester: selectedSemester
         }),
       });
 

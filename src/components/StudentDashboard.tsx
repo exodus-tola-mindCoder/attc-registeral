@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { BookOpen, FileCheck, Download, Loader2, Calendar, GraduationCap, Clock, AlertTriangle } from 'lucide-react';
+import { BookOpen, FileCheck, Download, Loader2, Calendar, CheckCircle, GraduationCap, Clock, AlertTriangle } from 'lucide-react';
 import { User, Course, Registration } from '../types';
 
 interface StudentDashboardProps {

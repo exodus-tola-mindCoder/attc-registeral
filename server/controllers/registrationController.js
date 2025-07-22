@@ -168,12 +168,16 @@ export const registerForSemester = async (req, res) => {
 
     const totalCredits = coursesToRegister.reduce((sum, course) => sum + course.credit, 0);
 
+    // Get academicYear from student or request (fallback to current year if not present)
+    const academicYear = student.academicYear || req.body.academicYear || new Date().getFullYear();
+
     // Create registration record
     const registration = new Registration({
       studentId: student._id,
       department,
       year: student.currentYear,
       semester: student.currentSemester,
+      academicYear,
       courses: coursesToRegister,
       totalCredits,
       status: 'registered'

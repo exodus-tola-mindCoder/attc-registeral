@@ -9,6 +9,7 @@ import {
 } from '../controllers/courseController.js';
 import verifyToken from '../middleware/verifyToken.js';
 import checkRole from '../middleware/checkRole.js';
+import { validateAddCourses } from '../validators/courseValidators.js';
 
 const router = express.Router();
 
@@ -19,7 +20,7 @@ router.use(checkRole(['departmentHead']));
 // @desc    Add or update courses for a department/year/semester
 // @route   POST /api/depthead/courses
 // @access  Private (Department Head only)
-router.post('/', addCourses);
+router.post('/', validateAddCourses, addCourses);
 
 // @desc    Get courses for a specific department/year/semester
 // @route   GET /api/depthead/courses

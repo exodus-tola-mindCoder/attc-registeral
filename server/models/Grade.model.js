@@ -41,7 +41,7 @@ const gradeSchema = new mongoose.Schema({
     required: [true, 'Department is required'],
     enum: ['Freshman', 'Electrical', 'Manufacturing', 'Automotive']
   },
-  
+
   // Grade Components
   midtermMark: {
     type: Number,
@@ -61,7 +61,7 @@ const gradeSchema = new mongoose.Schema({
     max: [40, 'Final exam mark cannot exceed 40'],
     default: 0
   },
-  
+
   // Calculated Fields
   totalMark: {
     type: Number,
@@ -80,7 +80,7 @@ const gradeSchema = new mongoose.Schema({
     max: 4,
     default: 0
   },
-  
+
   // Academic Status Flags
   probation: {
     type: Boolean,
@@ -94,14 +94,24 @@ const gradeSchema = new mongoose.Schema({
     type: Boolean,
     default: false
   },
-  
+
   // Workflow Status
   status: {
     type: String,
     enum: ['draft', 'submitted', 'approved', 'rejected', 'finalized', 'locked'],
     default: 'draft'
   },
-  
+
+  // Approval Flags for Excel Upload
+  isApprovedByDeptHead: {
+    type: Boolean,
+    default: false
+  },
+  isApprovedByRegistrar: {
+    type: Boolean,
+    default: false
+  },
+
   // Workflow Tracking
   submittedAt: Date,
   submittedBy: {
@@ -123,7 +133,7 @@ const gradeSchema = new mongoose.Schema({
     type: mongoose.Schema.Types.ObjectId,
     ref: 'User'
   },
-  
+
   // Comments and Notes
   instructorComments: {
     type: String,
@@ -137,7 +147,7 @@ const gradeSchema = new mongoose.Schema({
     type: String,
     maxlength: [500, 'Registrar comments cannot exceed 500 characters']
   },
-  
+
   // Rejection Reason
   rejectionReason: {
     type: String,
@@ -155,23 +165,23 @@ gradeSchema.index({ status: 1, submittedAt: -1 });
 gradeSchema.index({ academicYear: 1, semester: 1 });
 
 // Pre-save middleware to calculate total mark and grade
-gradeSchema.pre('save', function(next) {
+gradeSchema.pre('save', function (next) {
   // Calculate total mark
   this.totalMark = this.midtermMark + this.continuousMark + this.finalExamMark;
-  
+
   // Calculate letter grade and grade points
   const gradeInfo = this.calculateLetterGrade(this.totalMark);
   this.letterGrade = gradeInfo.letter;
   this.gradePoints = gradeInfo.points;
-  
+
   // Check if repeat is required
   this.repeatRequired = ['F', 'NG'].includes(this.letterGrade);
-  
+
   next();
 });
 
 // Instance method to calculate letter grade
-gradeSchema.methods.calculateLetterGrade = function(totalMark) {
+gradeSchema.methods.calculateLetterGrade = function (totalMark) {
   if (totalMark >= 90) return { letter: 'A+', points: 4.0 };
   if (totalMark >= 85) return { letter: 'A', points: 4.0 };
   if (totalMark >= 80) return { letter: 'A-', points: 3.75 };
@@ -185,33 +195,33 @@ gradeSchema.methods.calculateLetterGrade = function(totalMark) {
 };
 
 // Instance method to check if grade can be modified
-gradeSchema.methods.canBeModified = function() {
+gradeSchema.methods.canBeModified = function () {
   return ['draft', 'rejected'].includes(this.status);
 };
 
 // Instance method to check if grade can be submitted
-gradeSchema.methods.canBeSubmitted = function() {
+gradeSchema.methods.canBeSubmitted = function () {
   return ['draft', 'rejected'].includes(this.status);
 };
 
 // Instance method to check if grade can be approved
-gradeSchema.methods.canBeApproved = function() {
+gradeSchema.methods.canBeApproved = function () {
   return this.status === 'submitted';
 };
 
 // Instance method to check if grade can be finalized
-gradeSchema.methods.canBeFinalized = function() {
+gradeSchema.methods.canBeFinalized = function () {
   return this.status === 'approved';
 };
 
 // Static method to calculate student CGPA
-gradeSchema.statics.calculateStudentCGPA = async function(studentId, academicYear = null) {
-  const matchQuery = { 
-    studentId, 
+gradeSchema.statics.calculateStudentCGPA = async function (studentId, academicYear = null) {
+  const matchQuery = {
+    studentId,
     status: 'finalized',
     letterGrade: { $nin: ['W', 'I', 'NG'] }
   };
-  
+
   if (academicYear) {
     matchQuery.academicYear = academicYear;
   }
@@ -230,7 +240,7 @@ gradeSchema.statics.calculateStudentCGPA = async function(studentId, academicYea
     {
       $group: {
         _id: null,
-        totalGradePoints: { 
+        totalGradePoints: {
           $sum: { $multiply: ['$gradePoints', '$course.credit'] }
         },
         totalCredits: { $sum: '$course.credit' },
@@ -245,7 +255,7 @@ gradeSchema.statics.calculateStudentCGPA = async function(studentId, academicYea
 
   const result = grades[0];
   const cgpa = result.totalCredits > 0 ? result.totalGradePoints / result.totalCredits : 0;
-  
+
   return {
     cgpa: Math.round(cgpa * 100) / 100, // Round to 2 decimal places
     totalCredits: result.totalCredits,
@@ -254,18 +264,18 @@ gradeSchema.statics.calculateStudentCGPA = async function(studentId, academicYea
 };
 
 // Static method to get grades pending approval
-gradeSchema.statics.getPendingApprovals = function(departmentHeadId) {
+gradeSchema.statics.getPendingApprovals = function (departmentHeadId) {
   return this.find({
     status: 'submitted'
   })
-  .populate('studentId', 'firstName fatherName grandfatherName studentId')
-  .populate('courseId', 'courseCode courseName credit')
-  .populate('instructorId', 'firstName fatherName')
-  .sort({ submittedAt: 1 });
+    .populate('studentId', 'firstName fatherName grandfatherName studentId')
+    .populate('courseId', 'courseCode courseName credit')
+    .populate('instructorId', 'firstName fatherName')
+    .sort({ submittedAt: 1 });
 };
 
 // Static method to get semester grade statistics
-gradeSchema.statics.getSemesterStats = async function(department, year, semester, academicYear) {
+gradeSchema.statics.getSemesterStats = async function (department, year, semester, academicYear) {
   const stats = await this.aggregate([
     {
       $match: {
