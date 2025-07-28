@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
-import { 
-  Calendar, Users, Clock, Loader2, Plus, Edit, Trash2, 
-  Save, X, Search, Filter, Building, BookOpen, CheckCircle, 
+import {
+  Calendar, Users, Clock, Loader2, Plus, Edit, Trash2,
+  Save, X, Search, Filter, Building, BookOpen, CheckCircle,
   AlertTriangle, BarChart3, ChevronDown, ChevronUp
 } from 'lucide-react';
 import { User, ClassSchedule } from '../types';
@@ -52,23 +52,23 @@ const API_BASE = 'http://localhost:5000/api';
 const ClassScheduling: React.FC<ClassSchedulingProps> = ({ user, token, onError, onSuccess }) => {
   const [activeTab, setActiveTab] = useState<'create' | 'view' | 'manage' | 'stats'>('view');
   const [loading, setLoading] = useState(false);
-  
+
   // Shared data
   const [courses, setCourses] = useState<Course[]>([]);
   const [instructors, setInstructors] = useState<Instructor[]>([]);
   const [availableRooms, setAvailableRooms] = useState<Room[]>([]);
-  
+
   // Department Head / Registrar data
   const [departmentSchedules, setDepartmentSchedules] = useState<any>({});
   const [departmentFilter, setDepartmentFilter] = useState<string>(user.department || 'Freshman');
   const [scheduleStats, setScheduleStats] = useState<any>(null);
-  
+
   // Student data
   const [studentSchedule, setStudentSchedule] = useState<any>({});
-  
+
   // Instructor data
   const [instructorSchedule, setInstructorSchedule] = useState<any>({});
-  
+
   // Form data
   const [scheduleForm, setScheduleForm] = useState<ScheduleData>({
     courseId: '',
@@ -82,14 +82,14 @@ const ClassScheduling: React.FC<ClassSchedulingProps> = ({ user, token, onError,
     roomNumber: '',
     notes: ''
   });
-  
+
   const [editingSchedule, setEditingSchedule] = useState<string | null>(null);
   const [showConflictWarning, setShowConflictWarning] = useState(false);
   const [conflictDetails, setConflictDetails] = useState<any>(null);
-  
+
   const departments = ['Freshman', 'Electrical', 'Manufacturing', 'Automotive', 'Construction', 'ICT'];
   const daysOfWeek = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'];
-  
+
   useEffect(() => {
     // Set initial active tab based on user role
     if (user.role === 'student') {
@@ -128,7 +128,8 @@ const ClassScheduling: React.FC<ClassSchedulingProps> = ({ user, token, onError,
 
   const fetchInstructors = async () => {
     try {
-      const response = await fetch(`${API_BASE}/schedule/available-instructors?dayOfWeek=${scheduleForm.dayOfWeek}&startTime=${scheduleForm.startTime}&endTime=${scheduleForm.endTime}&academicYear=${scheduleForm.academicYear}&semester=${scheduleForm.semester}`, {
+      // Updated to match backend: always returns all instructors
+      const response = await fetch(`${API_BASE}/schedule/available-instructors`, {
         headers: {
           'Authorization': `Bearer ${token}`,
         },
@@ -136,7 +137,14 @@ const ClassScheduling: React.FC<ClassSchedulingProps> = ({ user, token, onError,
 
       const data = await response.json();
       if (data.success) {
-        setInstructors(data.data.availableInstructors || []);
+        // Backend now returns data.data.instructors
+        setInstructors(
+          (data.data.instructors || []).map((inst: any) => ({
+            _id: inst._id,
+            name: `${inst.firstName} ${inst.fatherName}`,
+            email: inst.email
+          }))
+        );
       }
     } catch (err) {
       console.error('Failed to fetch instructors');
@@ -153,10 +161,12 @@ const ClassScheduling: React.FC<ClassSchedulingProps> = ({ user, token, onError,
 
       const data = await response.json();
       if (data.success) {
+        // If no rooms available, allow room selection to be optional
         setAvailableRooms(data.data.availableRooms.map((room: string) => ({ roomNumber: room })) || []);
       }
-    } catch (err) {
-      console.error('Failed to fetch available rooms');
+    } catch {
+      // If error, allow room selection to be optional
+      setAvailableRooms([]);
     }
   };
 
@@ -243,17 +253,32 @@ const ClassScheduling: React.FC<ClassSchedulingProps> = ({ user, token, onError,
   // Form handlers
   const handleCreateSchedule = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (!token || token.trim() === '') {
+      onError('Session expired or not logged in. Please log in to continue.');
+      return;
+    }
     setLoading(true);
     setShowConflictWarning(false);
 
     try {
+      // Remove roomNumber if not selected (empty string or falsy)
+      const payload = { ...scheduleForm };
+      if (!payload.roomNumber || payload.roomNumber === '') {
+        delete payload.roomNumber;
+      }
+      // Remove any other empty string fields that are optional
+      Object.keys(payload).forEach(key => {
+        if (payload[key] === '') {
+          delete payload[key];
+        }
+      });
       const response = await fetch(`${API_BASE}/schedule/create`, {
         method: 'POST',
         headers: {
           'Authorization': `Bearer ${token}`,
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify(scheduleForm),
+        body: JSON.stringify(payload),
       });
 
       const data = await response.json();
@@ -287,13 +312,23 @@ const ClassScheduling: React.FC<ClassSchedulingProps> = ({ user, token, onError,
     setShowConflictWarning(false);
 
     try {
+      // Remove roomNumber if not selected (empty string or falsy)
+      const payload = { ...scheduleForm };
+      if (!payload.roomNumber || payload.roomNumber === '') {
+        delete payload.roomNumber;
+      }
+      Object.keys(payload).forEach(key => {
+        if (payload[key] === '') {
+          delete payload[key];
+        }
+      });
       const response = await fetch(`${API_BASE}/schedule/${scheduleId}`, {
         method: 'PUT',
         headers: {
           'Authorization': `Bearer ${token}`,
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify(scheduleForm),
+        body: JSON.stringify(payload),
       });
 
       const data = await response.json();
@@ -334,8 +369,8 @@ const ClassScheduling: React.FC<ClassSchedulingProps> = ({ user, token, onError,
       const data = await response.json();
 
       if (data.success) {
-        onSuccess(data.data?.deactivated 
-          ? 'Schedule deactivated (attendance records exist)' 
+        onSuccess(data.data?.deactivated
+          ? 'Schedule deactivated (attendance records exist)'
           : 'Schedule deleted successfully');
         fetchDepartmentSchedules();
       } else {
@@ -350,8 +385,8 @@ const ClassScheduling: React.FC<ClassSchedulingProps> = ({ user, token, onError,
 
   // Effect to fetch available instructors and rooms when time slot changes
   useEffect(() => {
-    if (['departmentHead', 'registrar'].includes(user.role) && 
-        scheduleForm.dayOfWeek && scheduleForm.startTime && scheduleForm.endTime) {
+    if (['departmentHead', 'registrar'].includes(user.role) &&
+      scheduleForm.dayOfWeek && scheduleForm.startTime && scheduleForm.endTime) {
       fetchInstructors();
       fetchAvailableRooms();
     }
@@ -376,7 +411,7 @@ const ClassScheduling: React.FC<ClassSchedulingProps> = ({ user, token, onError,
   const getTimeSlots = () => {
     const slots = [];
     for (let hour = 8; hour <= 18; hour++) {
-      for (let minute of ['00', '30']) {
+      for (const minute of ['00', '30']) {
         slots.push(`${hour.toString().padStart(2, '0')}:${minute}`);
       }
     }
@@ -414,11 +449,10 @@ const ClassScheduling: React.FC<ClassSchedulingProps> = ({ user, token, onError,
           {user.role === 'student' && (
             <button
               onClick={() => setActiveTab('view')}
-              className={`flex-shrink-0 py-2 px-4 rounded-md text-sm font-medium transition-colors duration-200 ${
-                activeTab === 'view'
-                  ? 'bg-white text-purple-600 shadow-sm'
-                  : 'text-gray-600 hover:text-gray-900'
-              }`}
+              className={`flex-shrink-0 py-2 px-4 rounded-md text-sm font-medium transition-colors duration-200 ${activeTab === 'view'
+                ? 'bg-white text-purple-600 shadow-sm'
+                : 'text-gray-600 hover:text-gray-900'
+                }`}
             >
               <Calendar className="h-4 w-4 inline mr-2" />
               My Timetable
@@ -428,11 +462,10 @@ const ClassScheduling: React.FC<ClassSchedulingProps> = ({ user, token, onError,
           {user.role === 'instructor' && (
             <button
               onClick={() => setActiveTab('view')}
-              className={`flex-shrink-0 py-2 px-4 rounded-md text-sm font-medium transition-colors duration-200 ${
-                activeTab === 'view'
-                  ? 'bg-white text-purple-600 shadow-sm'
-                  : 'text-gray-600 hover:text-gray-900'
-              }`}
+              className={`flex-shrink-0 py-2 px-4 rounded-md text-sm font-medium transition-colors duration-200 ${activeTab === 'view'
+                ? 'bg-white text-purple-600 shadow-sm'
+                : 'text-gray-600 hover:text-gray-900'
+                }`}
             >
               <Calendar className="h-4 w-4 inline mr-2" />
               My Teaching Schedule
@@ -443,33 +476,30 @@ const ClassScheduling: React.FC<ClassSchedulingProps> = ({ user, token, onError,
             <>
               <button
                 onClick={() => setActiveTab('create')}
-                className={`flex-shrink-0 py-2 px-4 rounded-md text-sm font-medium transition-colors duration-200 ${
-                  activeTab === 'create'
-                    ? 'bg-white text-purple-600 shadow-sm'
-                    : 'text-gray-600 hover:text-gray-900'
-                }`}
+                className={`flex-shrink-0 py-2 px-4 rounded-md text-sm font-medium transition-colors duration-200 ${activeTab === 'create'
+                  ? 'bg-white text-purple-600 shadow-sm'
+                  : 'text-gray-600 hover:text-gray-900'
+                  }`}
               >
                 <Plus className="h-4 w-4 inline mr-2" />
                 Create Schedule
               </button>
               <button
                 onClick={() => setActiveTab('manage')}
-                className={`flex-shrink-0 py-2 px-4 rounded-md text-sm font-medium transition-colors duration-200 ${
-                  activeTab === 'manage'
-                    ? 'bg-white text-purple-600 shadow-sm'
-                    : 'text-gray-600 hover:text-gray-900'
-                }`}
+                className={`flex-shrink-0 py-2 px-4 rounded-md text-sm font-medium transition-colors duration-200 ${activeTab === 'manage'
+                  ? 'bg-white text-purple-600 shadow-sm'
+                  : 'text-gray-600 hover:text-gray-900'
+                  }`}
               >
                 <Edit className="h-4 w-4 inline mr-2" />
                 Manage Schedules
               </button>
               <button
                 onClick={() => setActiveTab('stats')}
-                className={`flex-shrink-0 py-2 px-4 rounded-md text-sm font-medium transition-colors duration-200 ${
-                  activeTab === 'stats'
-                    ? 'bg-white text-purple-600 shadow-sm'
-                    : 'text-gray-600 hover:text-gray-900'
-                }`}
+                className={`flex-shrink-0 py-2 px-4 rounded-md text-sm font-medium transition-colors duration-200 ${activeTab === 'stats'
+                  ? 'bg-white text-purple-600 shadow-sm'
+                  : 'text-gray-600 hover:text-gray-900'
+                  }`}
               >
                 <BarChart3 className="h-4 w-4 inline mr-2" />
                 Statistics
@@ -482,7 +512,7 @@ const ClassScheduling: React.FC<ClassSchedulingProps> = ({ user, token, onError,
         {activeTab === 'view' && user.role === 'student' && (
           <div className="space-y-6">
             <h3 className="text-lg font-medium text-gray-900">My Weekly Timetable</h3>
-            
+
             {loading ? (
               <div className="flex items-center justify-center py-8">
                 <Loader2 className="h-8 w-8 animate-spin text-purple-600" />
@@ -494,7 +524,7 @@ const ClassScheduling: React.FC<ClassSchedulingProps> = ({ user, token, onError,
                     <div className={`px-4 py-3 ${getScheduleColor(day)}`}>
                       <h4 className="font-medium">{day}</h4>
                     </div>
-                    
+
                     {studentSchedule[day]?.length > 0 ? (
                       <div className="divide-y divide-gray-200">
                         {studentSchedule[day].map((slot: any) => (
@@ -509,8 +539,16 @@ const ClassScheduling: React.FC<ClassSchedulingProps> = ({ user, token, onError,
                                 <div className="text-sm text-gray-600">Room {slot.roomNumber}</div>
                               </div>
                             </div>
-                            <div className="mt-2 text-xs text-gray-500">
-                              <span className="font-medium">Instructor:</span> {slot.instructor}
+                            <div className="mt-2 text-xs text-purple-700">
+                              <span className="font-medium">Instructor:</span> {
+                                slot.instructor
+                                  ? (typeof slot.instructor === 'object' && slot.instructor.name
+                                    ? slot.instructor.name
+                                    : typeof slot.instructor === 'string'
+                                      ? slot.instructor
+                                      : 'N/A')
+                                  : 'N/A'
+                              }
                             </div>
                           </div>
                         ))}
@@ -539,7 +577,7 @@ const ClassScheduling: React.FC<ClassSchedulingProps> = ({ user, token, onError,
         {activeTab === 'view' && user.role === 'instructor' && (
           <div className="space-y-6">
             <h3 className="text-lg font-medium text-gray-900">My Teaching Schedule</h3>
-            
+
             {loading ? (
               <div className="flex items-center justify-center py-8">
                 <Loader2 className="h-8 w-8 animate-spin text-purple-600" />
@@ -551,7 +589,7 @@ const ClassScheduling: React.FC<ClassSchedulingProps> = ({ user, token, onError,
                     <div className={`px-4 py-3 ${getScheduleColor(day)}`}>
                       <h4 className="font-medium">{day}</h4>
                     </div>
-                    
+
                     {instructorSchedule[day]?.length > 0 ? (
                       <div className="divide-y divide-gray-200">
                         {instructorSchedule[day].map((slot: any) => (
@@ -596,7 +634,7 @@ const ClassScheduling: React.FC<ClassSchedulingProps> = ({ user, token, onError,
         {activeTab === 'create' && ['departmentHead', 'registrar'].includes(user.role) && (
           <div className="space-y-6">
             <h3 className="text-lg font-medium text-gray-900">Create New Class Schedule</h3>
-            
+
             {showConflictWarning && conflictDetails && (
               <div className="bg-red-50 border border-red-200 rounded-md p-4 mb-4">
                 <div className="flex items-start">
@@ -614,7 +652,7 @@ const ClassScheduling: React.FC<ClassSchedulingProps> = ({ user, token, onError,
                 </div>
               </div>
             )}
-            
+
             <form onSubmit={handleCreateSchedule} className="space-y-6">
               <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                 <div>
@@ -634,7 +672,7 @@ const ClassScheduling: React.FC<ClassSchedulingProps> = ({ user, token, onError,
                     ))}
                   </select>
                 </div>
-                
+
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-2">
                     Academic Year
@@ -647,7 +685,7 @@ const ClassScheduling: React.FC<ClassSchedulingProps> = ({ user, token, onError,
                     placeholder="YYYY-YYYY"
                   />
                 </div>
-                
+
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-2">
                     Semester
@@ -662,7 +700,7 @@ const ClassScheduling: React.FC<ClassSchedulingProps> = ({ user, token, onError,
                   </select>
                 </div>
               </div>
-              
+
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-2">
                   Course
@@ -681,7 +719,7 @@ const ClassScheduling: React.FC<ClassSchedulingProps> = ({ user, token, onError,
                   ))}
                 </select>
               </div>
-              
+
               <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-2">
@@ -698,7 +736,7 @@ const ClassScheduling: React.FC<ClassSchedulingProps> = ({ user, token, onError,
                     ))}
                   </select>
                 </div>
-                
+
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-2">
                     Start Time
@@ -714,7 +752,7 @@ const ClassScheduling: React.FC<ClassSchedulingProps> = ({ user, token, onError,
                     ))}
                   </select>
                 </div>
-                
+
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-2">
                     End Time
@@ -731,7 +769,7 @@ const ClassScheduling: React.FC<ClassSchedulingProps> = ({ user, token, onError,
                   </select>
                 </div>
               </div>
-              
+
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-2">
@@ -756,18 +794,17 @@ const ClassScheduling: React.FC<ClassSchedulingProps> = ({ user, token, onError,
                     </p>
                   )}
                 </div>
-                
+
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-2">
-                    Room Number
+                    Room (Optional)
                   </label>
                   <select
                     value={scheduleForm.roomNumber}
                     onChange={(e) => setScheduleForm({ ...scheduleForm, roomNumber: e.target.value })}
-                    required
                     className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-purple-500"
                   >
-                    <option value="">Select a room</option>
+                    <option value="">No room selected</option>
                     {availableRooms.map(room => (
                       <option key={room.roomNumber} value={room.roomNumber}>
                         Room {room.roomNumber}
@@ -781,7 +818,7 @@ const ClassScheduling: React.FC<ClassSchedulingProps> = ({ user, token, onError,
                   )}
                 </div>
               </div>
-              
+
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-2">
                   Notes (Optional)
@@ -794,10 +831,10 @@ const ClassScheduling: React.FC<ClassSchedulingProps> = ({ user, token, onError,
                   placeholder="Add any additional notes about this class schedule..."
                 />
               </div>
-              
+
               <button
                 type="submit"
-                disabled={loading || !scheduleForm.courseId || !scheduleForm.instructorId || !scheduleForm.roomNumber}
+                disabled={loading || !scheduleForm.courseId || !scheduleForm.instructorId}
                 className="w-full bg-purple-600 hover:bg-purple-700 disabled:bg-gray-400 text-white py-2 px-4 rounded-md transition-colors duration-200 flex items-center justify-center space-x-2"
               >
                 {loading ? (
@@ -828,7 +865,7 @@ const ClassScheduling: React.FC<ClassSchedulingProps> = ({ user, token, onError,
                 </select>
               </div>
             </div>
-            
+
             {loading ? (
               <div className="flex items-center justify-center py-8">
                 <Loader2 className="h-8 w-8 animate-spin text-purple-600" />
@@ -840,7 +877,7 @@ const ClassScheduling: React.FC<ClassSchedulingProps> = ({ user, token, onError,
                     <div className={`px-4 py-3 ${getScheduleColor(day)}`}>
                       <h4 className="font-medium">{day}</h4>
                     </div>
-                    
+
                     {departmentSchedules[day]?.length > 0 ? (
                       <div className="divide-y divide-gray-200">
                         {departmentSchedules[day].map((slot: any) => (
@@ -862,7 +899,7 @@ const ClassScheduling: React.FC<ClassSchedulingProps> = ({ user, token, onError,
                                       ))}
                                     </select>
                                   </div>
-                                  
+
                                   <div>
                                     <label className="block text-xs font-medium text-gray-700 mb-1">
                                       End Time
@@ -877,7 +914,7 @@ const ClassScheduling: React.FC<ClassSchedulingProps> = ({ user, token, onError,
                                       ))}
                                     </select>
                                   </div>
-                                  
+
                                   <div>
                                     <label className="block text-xs font-medium text-gray-700 mb-1">
                                       Room
@@ -896,7 +933,7 @@ const ClassScheduling: React.FC<ClassSchedulingProps> = ({ user, token, onError,
                                     </select>
                                   </div>
                                 </div>
-                                
+
                                 <div className="flex space-x-2">
                                   <button
                                     onClick={() => handleUpdateSchedule(slot._id)}
@@ -921,7 +958,11 @@ const ClassScheduling: React.FC<ClassSchedulingProps> = ({ user, token, onError,
                                   <div className="font-medium text-gray-900">{slot.courseCode}</div>
                                   <div className="text-sm text-gray-600">{slot.courseName}</div>
                                   <div className="mt-1 text-xs text-gray-500">
-                                    <span className="font-medium">Instructor:</span> {slot.instructor.name}
+                                    <span className="font-medium">Instructor:</span> {
+                                      slot.instructor && slot.instructor.name
+                                        ? slot.instructor.name
+                                        : 'N/A'
+                                    }
                                   </div>
                                 </div>
                                 <div className="text-right">
@@ -1002,7 +1043,7 @@ const ClassScheduling: React.FC<ClassSchedulingProps> = ({ user, token, onError,
                 </select>
               </div>
             </div>
-            
+
             {loading ? (
               <div className="flex items-center justify-center py-8">
                 <Loader2 className="h-8 w-8 animate-spin text-purple-600" />
@@ -1012,7 +1053,7 @@ const ClassScheduling: React.FC<ClassSchedulingProps> = ({ user, token, onError,
                 {/* Department Stats */}
                 <div className="bg-white border border-gray-200 rounded-lg p-6">
                   <h4 className="font-medium text-gray-900 mb-4">Department Overview</h4>
-                  
+
                   <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
                     {scheduleStats.departmentStats.map((dept: any) => (
                       <div key={dept.department} className="bg-purple-50 p-4 rounded-lg">
@@ -1024,10 +1065,10 @@ const ClassScheduling: React.FC<ClassSchedulingProps> = ({ user, token, onError,
                       </div>
                     ))}
                   </div>
-                  
+
                   <h5 className="font-medium text-gray-800 mb-2">Classes by Day</h5>
                   <div className="grid grid-cols-2 md:grid-cols-7 gap-2">
-                    {scheduleStats.departmentStats.flatMap((dept: any) => 
+                    {scheduleStats.departmentStats.flatMap((dept: any) =>
                       dept.dayStats.map((day: any) => (
                         <div key={`${dept.department}-${day.day}`} className={`p-3 rounded-lg ${getScheduleColor(day.day)}`}>
                           <div className="text-xs font-medium">{day.day}</div>
@@ -1040,11 +1081,11 @@ const ClassScheduling: React.FC<ClassSchedulingProps> = ({ user, token, onError,
                     )}
                   </div>
                 </div>
-                
+
                 {/* Room Utilization */}
                 <div className="bg-white border border-gray-200 rounded-lg p-6">
                   <h4 className="font-medium text-gray-900 mb-4">Room Utilization</h4>
-                  
+
                   <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
                     {scheduleStats.roomUtilization.slice(0, 8).map((room: any) => (
                       <div key={room._id} className="bg-blue-50 p-4 rounded-lg">
@@ -1057,11 +1098,11 @@ const ClassScheduling: React.FC<ClassSchedulingProps> = ({ user, token, onError,
                     ))}
                   </div>
                 </div>
-                
+
                 {/* Instructor Load */}
                 <div className="bg-white border border-gray-200 rounded-lg p-6">
                   <h4 className="font-medium text-gray-900 mb-4">Instructor Teaching Load</h4>
-                  
+
                   <div className="overflow-x-auto">
                     <table className="min-w-full divide-y divide-gray-200">
                       <thead className="bg-gray-50">

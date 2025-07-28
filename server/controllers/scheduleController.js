@@ -138,7 +138,11 @@ export const createSchedule = async (req, res) => {
           _id: schedule._id,
           courseCode: course.courseCode,
           courseName: course.courseName,
-          instructor: `${instructor.firstName} ${instructor.fatherName}`,
+          instructor: {
+            _id: instructor._id,
+            name: `${instructor.firstName} ${instructor.fatherName}`,
+            email: instructor.email
+          },
           dayOfWeek: schedule.dayOfWeek,
           startTime: schedule.startTime,
           endTime: schedule.endTime,
@@ -623,16 +627,7 @@ export const deleteSchedule = async (req, res) => {
 // @access  Private (Department Head, Registrar)
 export const getAvailableInstructors = async (req, res) => {
   try {
-    const { dayOfWeek, startTime, endTime, academicYear, semester, department } = req.query;
-
-    if (!dayOfWeek || !startTime || !endTime || !academicYear || !semester) {
-      return res.status(400).json({
-        success: false,
-        message: 'Day, time slot, academic year, and semester are required'
-      });
-    }
-
-    // Get all instructors
+    // Return all instructors regardless of time/department filter
     const instructors = await User.find({
       role: 'instructor',
       status: 'active'
@@ -640,58 +635,19 @@ export const getAvailableInstructors = async (req, res) => {
       .select('_id firstName fatherName email department')
       .sort({ firstName: 1, fatherName: 1 });
 
-    // Filter by department if specified
-    const departmentInstructors = department
-      ? instructors.filter(i => !i.department || i.department === department)
-      : instructors;
-
-    // Find busy instructors at the specified time
-    const busyInstructorIds = await ClassSchedule.find({
-      dayOfWeek,
-      academicYear,
-      semester,
-      isActive: true,
-      $or: [
-        // New class starts during an existing class
-        {
-          startTime: { $lte: startTime },
-          endTime: { $gt: startTime }
-        },
-        // New class ends during an existing class
-        {
-          startTime: { $lt: endTime },
-          endTime: { $gte: endTime }
-        },
-        // New class completely contains an existing class
-        {
-          startTime: { $gte: startTime },
-          endTime: { $lte: endTime }
-        }
-      ]
-    })
-      .distinct('instructorId');
-
-    // Filter out busy instructors
-    const availableInstructors = departmentInstructors.filter(
-      instructor => !busyInstructorIds.some(id => id.equals(instructor._id))
-    );
-
     res.status(200).json({
       success: true,
-      message: 'Available instructors retrieved successfully',
+      message: 'All instructors retrieved successfully',
       data: {
-        availableInstructors,
-        totalAvailable: availableInstructors.length,
-        totalInstructors: departmentInstructors.length,
-        busyInstructors: departmentInstructors.length - availableInstructors.length
+        instructors,
+        totalInstructors: instructors.length
       }
     });
-
   } catch (error) {
     console.error('Get available instructors error:', error);
     res.status(500).json({
       success: false,
-      message: 'Failed to retrieve available instructors',
+      message: 'Failed to retrieve instructors',
       ...(process.env.NODE_ENV === 'development' && { error: error.message })
     });
   }

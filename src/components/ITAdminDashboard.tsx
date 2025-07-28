@@ -96,7 +96,7 @@ const ITAdminDashboard: React.FC<ITAdminDashboardProps> = ({ user, token, onErro
   });
 
   const roles = ['instructor', 'departmentHead', 'registrar', 'itAdmin', 'president', 'placementCommittee'];
-  const departments = ['Electrical', 'Manufacturing', 'Automotive', 'Construction', 'ICT'];
+  const departments = ['Freshman', 'Electrical', 'Manufacturing', 'Automotive', 'Construction', 'ICT'];
 
   useEffect(() => {
     if (activeTab === 'dashboard') {
@@ -308,8 +308,8 @@ const ITAdminDashboard: React.FC<ITAdminDashboardProps> = ({ user, token, onErro
           <button
             onClick={() => setActiveTab('dashboard')}
             className={`flex-shrink-0 py-2 px-4 rounded-md text-sm font-medium transition-colors duration-200 ${activeTab === 'dashboard'
-                ? 'bg-white text-purple-600 shadow-sm'
-                : 'text-gray-600 hover:text-gray-900'
+              ? 'bg-white text-purple-600 shadow-sm'
+              : 'text-gray-600 hover:text-gray-900'
               }`}
           >
             <Activity className="h-4 w-4 inline mr-2" />
@@ -318,8 +318,8 @@ const ITAdminDashboard: React.FC<ITAdminDashboardProps> = ({ user, token, onErro
           <button
             onClick={() => setActiveTab('users')}
             className={`flex-shrink-0 py-2 px-4 rounded-md text-sm font-medium transition-colors duration-200 ${activeTab === 'users'
-                ? 'bg-white text-purple-600 shadow-sm'
-                : 'text-gray-600 hover:text-gray-900'
+              ? 'bg-white text-purple-600 shadow-sm'
+              : 'text-gray-600 hover:text-gray-900'
               }`}
           >
             <Users className="h-4 w-4 inline mr-2" />
@@ -328,8 +328,8 @@ const ITAdminDashboard: React.FC<ITAdminDashboardProps> = ({ user, token, onErro
           <button
             onClick={() => setActiveTab('create')}
             className={`flex-shrink-0 py-2 px-4 rounded-md text-sm font-medium transition-colors duration-200 ${activeTab === 'create'
-                ? 'bg-white text-purple-600 shadow-sm'
-                : 'text-gray-600 hover:text-gray-900'
+              ? 'bg-white text-purple-600 shadow-sm'
+              : 'text-gray-600 hover:text-gray-900'
               }`}
           >
             <UserPlus className="h-4 w-4 inline mr-2" />
@@ -338,8 +338,8 @@ const ITAdminDashboard: React.FC<ITAdminDashboardProps> = ({ user, token, onErro
           <button
             onClick={() => setActiveTab('health')}
             className={`flex-shrink-0 py-2 px-4 rounded-md text-sm font-medium transition-colors duration-200 ${activeTab === 'health'
-                ? 'bg-white text-purple-600 shadow-sm'
-                : 'text-gray-600 hover:text-gray-900'
+              ? 'bg-white text-purple-600 shadow-sm'
+              : 'text-gray-600 hover:text-gray-900'
               }`}
           >
             <Server className="h-4 w-4 inline mr-2" />
@@ -348,8 +348,8 @@ const ITAdminDashboard: React.FC<ITAdminDashboardProps> = ({ user, token, onErro
           <button
             onClick={() => setActiveTab('audit')}
             className={`flex-shrink-0 py-2 px-4 rounded-md text-sm font-medium transition-colors duration-200 ${activeTab === 'audit'
-                ? 'bg-white text-purple-600 shadow-sm'
-                : 'text-gray-600 hover:text-gray-900'
+              ? 'bg-white text-purple-600 shadow-sm'
+              : 'text-gray-600 hover:text-gray-900'
               }`}
           >
             <Eye className="h-4 w-4 inline mr-2" />

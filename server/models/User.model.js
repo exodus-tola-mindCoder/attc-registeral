@@ -57,7 +57,7 @@ const userSchema = new mongoose.Schema({
   },
   department: {
     type: String,
-    enum: ['Electrical', 'Manufacturing', 'Automotive', 'Construction', 'ICT'],
+    enum: ['Electrical', 'Manufacturing', 'Automotive', 'Construction', 'Freshman', 'ICT'],
     required: function() {
       return this.role === 'student' && this.currentYear > 1;
     }
